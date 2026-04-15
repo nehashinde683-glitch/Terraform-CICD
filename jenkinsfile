@@ -1,36 +1,50 @@
 pipeline {
     agent any
- 
+
+    environment {
+        AWS_REGION = "ap-south-1"
+    }
+
     stages {
- 
-        stage('Checkout') {
+
+        stage('Checkout Code') {
             steps {
-            git branch: 'main', url: 'https://github.com/nehashinde683-glitch/Terraform-Practice.git'
+                git branch: 'main', url: 'https://github.com/nehashinde683-glitch/Terraform-Practice.git'
             }
         }
- 
+
         stage('Terraform Init') {
             steps {
-                dir('Day2-sample-base-code') {
-                    sh 'terraform init'
-                }
+                sh 'terraform init'
             }
         }
- 
+
+        stage('Terraform Validate') {
+            steps {
+                sh 'terraform validate'
+            }
+        }
+
         stage('Terraform Plan') {
             steps {
-                dir('Day2-sample-base-code') {
-                    sh 'terraform plan -out=tfplan'
-                }
+                sh 'terraform plan'
             }
         }
- 
+
         stage('Terraform Apply') {
             steps {
-                dir('Day2-sample-base-code') {
-                    sh 'terraform apply -auto-approve tfplan'
-                }
+                input message: 'Do you want to apply Terraform?'
+                sh 'terraform apply -auto-approve'
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment Successful ✅'
+        }
+        failure {
+            echo 'Build Failed ❌'
         }
     }
 }
